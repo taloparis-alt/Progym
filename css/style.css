@@ -287,39 +287,28 @@ main {
   gap: 6px;
 }
 
-.prev-badge {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  background: rgba(255, 255, 255, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 20px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  margin-bottom: 6px;
+.set-labels,
+.set-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 62px auto;
+  align-items: center;
+  gap: 6px;
 }
 
-.prev-badge .prev-label {
-  text-transform: uppercase;
+.set-labels {
+  padding: 0 4px;
+  margin-bottom: 2px;
+}
+
+.set-labels span {
+  font-size: 0.62rem;
   font-weight: 700;
-  opacity: 0.75;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.prev-badge .prev-value {
-  font-weight: 800;
-}
-
-.prev-badge.empty {
-  opacity: 0.6;
-  font-style: italic;
+  opacity: 0.75;
 }
 
 .set-row {
-  display: grid;
-  grid-template-columns: 50px 1fr;
-  align-items: center;
-  gap: 6px;
   transition: background 0.3s ease;
   border-radius: 8px;
   padding: 2px 4px;
@@ -346,6 +335,45 @@ main {
 
 .input-hecho {
   min-width: 0;
+}
+
+.prev-compact {
+  font-size: 0.78rem;
+  font-weight: 700;
+  opacity: 0.85;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-save-row {
+  background: var(--white);
+  color: var(--red);
+  border: none;
+  font-weight: 800;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.btn-save-row.saved-flash {
+  background: #2e8b3d;
+  color: var(--white);
+}
+
+@media (max-width: 640px) {
+  .set-labels,
+  .set-row {
+    grid-template-columns: 46px 1fr 52px auto;
+  }
+
+  .btn-save-row {
+    padding: 8px 10px;
+    font-size: 0.72rem;
+  }
 }
 
 /* Progress view */

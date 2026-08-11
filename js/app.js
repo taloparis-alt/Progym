@@ -99,14 +99,19 @@ function renderOnboarding() {
 function exerciseRowHtml(routineId, exercise) {
   const entry = getEntry(routineId, state.fecha, exercise.id);
   const last = getLastKnownForExercise(routineId, exercise.id, state.fecha);
-  const prevBadge = last
-    ? `<div class="prev-badge"><span class="prev-label">Peso anterior</span><span class="prev-value">${last.peso}kg${last.hecho ? " · " + escAttr(last.hecho) : ""}</span><span class="prev-date">(${last.date.slice(5)})</span></div>`
-    : `<div class="prev-badge empty">Sin registros previos</div>`;
+  const prevCompact = last ? `${last.peso}, ${last.hecho || "-"}` : "—";
   return `
-    ${prevBadge}
+    <div class="set-labels">
+      <span>Kg</span>
+      <span>Reps</span>
+      <span>Anterior</span>
+      <span></span>
+    </div>
     <div class="set-row" data-exercise="${exercise.id}">
       <input type="number" inputmode="decimal" step="0.5" class="input-peso" placeholder="kg" value="${escAttr(entry.peso)}">
       <input type="text" class="input-hecho" placeholder="${escAttr(exercise.target)}" value="${escAttr(entry.hecho)}">
+      <span class="prev-compact">${prevCompact}</span>
+      <button type="button" class="btn-save-row" data-exercise="${exercise.id}">Guardar</button>
     </div>
   `;
 }
@@ -230,6 +235,27 @@ function renderRutina() {
       const value = field === "peso" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value;
       setEntry(routine.id, state.fecha, row.dataset.exercise, field, value);
       flashSaved(row);
+    });
+  });
+
+  $$(".btn-save-row", root).forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const row = btn.closest(".set-row");
+      const pesoInput = row.querySelector(".input-peso");
+      const hechoInput = row.querySelector(".input-hecho");
+      setEntry(routine.id, state.fecha, row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
+      setEntry(routine.id, state.fecha, row.dataset.exercise, "hecho", hechoInput.value);
+      flashSaved(row);
+      const original = btn.textContent;
+      btn.textContent = "✓ Guardado";
+      btn.classList.add("saved-flash");
+      clearTimeout(Number(btn.dataset.savedTimer));
+      btn.dataset.savedTimer = String(
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove("saved-flash");
+        }, 1500)
+      );
     });
   });
 
