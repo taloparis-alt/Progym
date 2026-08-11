@@ -99,7 +99,7 @@ function renderOnboarding() {
 function exerciseRowHtml(routineId, exercise) {
   const entry = getEntry(routineId, state.fecha, exercise.id);
   const last = getLastKnownForExercise(routineId, exercise.id, state.fecha);
-  const prevCompact = last ? `${last.peso}, ${last.hecho || "-"}` : "—";
+  const prevCompact = last ? `${last.peso} - ${last.hecho || "-"}` : "—";
   return `
     <div class="set-labels">
       <span>Kg</span>
