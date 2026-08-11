@@ -1,0 +1,18 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#9c2225"/>
+      <stop offset="55%" stop-color="#7c1518"/>
+      <stop offset="100%" stop-color="#5e0f12"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g stroke="#ffffff" stroke-width="14" stroke-linecap="round">
+    <line x1="96" y1="256" x2="416" y2="256"/>
+    <line x1="96" y1="196" x2="96" y2="316"/>
+    <line x1="150" y1="216" x2="150" y2="296"/>
+    <line x1="416" y1="196" x2="416" y2="316"/>
+    <line x1="362" y1="216" x2="362" y2="296"/>
+  </g>
+  <text x="256" y="410" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="900" fill="#ffffff" text-anchor="middle" letter-spacing="4">PROGYM</text>
+</svg>
