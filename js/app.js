@@ -506,9 +506,11 @@ function configListHtml() {
       </label>
       <div class="new-routine-actions">
         <button id="btn-new-blank">Crear en blanco</button>
+        <label class="btn-import">Cargar desde PDF<input type="file" id="file-import-pdf" accept="application/pdf" hidden></label>
+        <label class="btn-import">Importar rutina (.json)<input type="file" id="file-import-routine" accept="application/json" hidden></label>
       </div>
-      <p class="hint-text">¿Tenés un PDF con la rutina nueva? Pasámelo por el chat como hiciste con el primero y te armo el archivo para importar acá abajo.</p>
-      <label class="btn-import">Importar rutina (.json)<input type="file" id="file-import-routine" accept="application/json" hidden></label>
+      <p class="hint-text">"Cargar desde PDF" lee el archivo del plan y arma los días, bloques y ejercicios automáticamente. Después revisás todo en el editor por si algo quedó mal leído.</p>
+      <p id="pdf-loading-note" class="hint-text hidden">Leyendo el PDF...</p>
     </div>
 
     <div class="pill-card backup-card">
@@ -558,6 +560,23 @@ function wireConfigList() {
     state.configScreen = "editor";
     state.configRoutineId = routine.id;
     renderConfig();
+  });
+
+  $("#file-import-pdf", root).addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const loadingNote = $("#pdf-loading-note", root);
+    loadingNote.classList.remove("hidden");
+    try {
+      const routine = await extractRoutineFromPdf(file);
+      upsertRoutine(routine);
+      state.configScreen = "editor";
+      state.configRoutineId = routine.id;
+      renderConfig();
+    } catch (err) {
+      loadingNote.classList.add("hidden");
+      showInlineError($(".new-routine-card", root), "No se pudo leer el PDF: " + err.message);
+    }
   });
 
   $("#file-import-routine", root).addEventListener("change", (e) => {
