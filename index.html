@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProGym · Seguimiento de entrenamiento</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="app-header" id="app-header">
+  <div class="stripes"></div>
+  <div class="header-content">
+    <h1>PROGYM</h1>
+    <p class="subtitle">Seguimiento de tu progreso en el gimnasio</p>
+    <div id="user-greeting-wrap"></div>
+  </div>
+</header>
+
+<nav class="main-nav" id="main-nav">
+  <button class="nav-btn active" data-view="rutina">Rutina</button>
+  <button class="nav-btn" data-view="progreso">Progreso</button>
+  <button class="nav-btn" data-view="config">Mis rutinas</button>
+</nav>
+
+<main>
+  <div id="view-onboarding" class="hidden"></div>
+  <div id="view-rutina" class="hidden"></div>
+  <div id="view-progreso" class="hidden"></div>
+  <div id="view-config" class="hidden"></div>
+</main>
+
+<footer class="app-footer">
+  <p>Los datos se guardan solo en este dispositivo (localStorage).</p>
+</footer>
+
+<script src="js/storage.js?v=8"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/chart.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
+</body>
+</html>
