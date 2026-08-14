@@ -210,6 +210,8 @@ function renderRutina() {
            </div>`
         : ""
     }
+
+    <button type="button" id="btn-save-session" class="btn-save-session">Guardar sesión completa</button>
   `;
 
   $$(".day-tab", root).forEach((btn) =>
@@ -219,13 +221,18 @@ function renderRutina() {
     })
   );
 
+  const currentFecha = () => $("#fecha-input", root).value || state.fecha || todayISO();
+
   $("#fecha-input", root).addEventListener("change", (e) => {
     state.fecha = e.target.value || todayISO();
     renderRutina();
   });
+  $("#fecha-input", root).addEventListener("input", (e) => {
+    state.fecha = e.target.value || todayISO();
+  });
 
   $("#bw-input", root).addEventListener("change", (e) => {
-    setBodyweightEntry(state.fecha, e.target.value === "" ? "" : Number(e.target.value));
+    setBodyweightEntry(currentFecha(), e.target.value === "" ? "" : Number(e.target.value));
   });
 
   $$(".input-peso, .input-hecho", root).forEach((input) => {
@@ -233,7 +240,7 @@ function renderRutina() {
       const row = e.target.closest(".set-row");
       const field = e.target.classList.contains("input-peso") ? "peso" : "hecho";
       const value = field === "peso" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value;
-      setEntry(routine.id, state.fecha, row.dataset.exercise, field, value);
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, field, value);
       flashSaved(row);
     });
   });
@@ -243,8 +250,8 @@ function renderRutina() {
       const row = btn.closest(".set-row");
       const pesoInput = row.querySelector(".input-peso");
       const hechoInput = row.querySelector(".input-hecho");
-      setEntry(routine.id, state.fecha, row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
-      setEntry(routine.id, state.fecha, row.dataset.exercise, "hecho", hechoInput.value);
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", hechoInput.value);
       flashSaved(row);
       const original = btn.textContent;
       btn.textContent = "✓ Guardado";
@@ -268,6 +275,30 @@ function renderRutina() {
       renderAll();
     })
   );
+
+  $("#btn-save-session", root).addEventListener("click", () => {
+    let count = 0;
+    $$(".set-row", root).forEach((row) => {
+      const pesoInput = row.querySelector(".input-peso");
+      const hechoInput = row.querySelector(".input-hecho");
+      if (pesoInput.value === "" && hechoInput.value === "") return;
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", hechoInput.value);
+      flashSaved(row);
+      count++;
+    });
+    const btn = $("#btn-save-session", root);
+    const original = btn.textContent;
+    btn.textContent = count > 0 ? `✓ Sesión guardada (${count} ejercicio${count === 1 ? "" : "s"})` : "No hay nada cargado para guardar";
+    btn.classList.add(count > 0 ? "saved-flash" : "empty-flash");
+    clearTimeout(Number(btn.dataset.savedTimer));
+    btn.dataset.savedTimer = String(
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove("saved-flash", "empty-flash");
+      }, 2200)
+    );
+  });
 }
 
 function flashSaved(row) {

@@ -203,6 +203,33 @@ main {
   margin: 8px 0 18px;
 }
 
+.btn-save-session {
+  display: block;
+  width: 100%;
+  background: var(--red);
+  color: var(--white);
+  border: 2px solid var(--white);
+  outline: 2px solid var(--red);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin: 8px 0 24px;
+  box-shadow: 0 4px 14px rgba(124, 21, 24, 0.25);
+}
+
+.btn-save-session.saved-flash {
+  background: #2e8b3d;
+  outline-color: #2e8b3d;
+}
+
+.btn-save-session.empty-flash {
+  background: var(--red-light);
+}
+
 .pill-card {
   background: var(--red);
   color: var(--white);
