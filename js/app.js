@@ -5,6 +5,8 @@ const state = {
   progressRoutineId: null,
   progressExerciseId: null,
   progressTab: "ejercicio",
+  progressDiaId: null,
+  progressSessionDate: null,
   configScreen: "list",
   configRoutineId: null,
 };
@@ -403,10 +405,31 @@ function renderProgreso() {
     )
     .join("");
 
+  if (!state.progressDiaId || !routine.dias.find((d) => d.id === state.progressDiaId)) {
+    state.progressDiaId = routine.dias.length ? routine.dias[0].id : null;
+  }
+
   root.innerHTML = `
     <div class="progress-tabs">
+      <button class="progress-tab ${state.progressTab === "dia" ? "active" : ""}" data-tab="dia">Por día</button>
       <button class="progress-tab ${state.progressTab === "ejercicio" ? "active" : ""}" data-tab="ejercicio">Por ejercicio</button>
       <button class="progress-tab ${state.progressTab === "peso" ? "active" : ""}" data-tab="peso">Peso corporal</button>
+    </div>
+
+    <div id="progress-dia" class="${state.progressTab === "dia" ? "" : "hidden"}">
+      <label class="ex-select-label">Rutina
+        <select id="progress-dia-routine-select">${routineOptionsHtml}</select>
+      </label>
+      ${
+        routine.dias.length
+          ? `<div class="day-tabs">
+              ${routine.dias
+                .map((d) => `<button class="day-tab ${d.id === state.progressDiaId ? "active" : ""}" data-progress-dia="${d.id}">${d.nombre}</button>`)
+                .join("")}
+            </div>
+            <div id="progress-dia-sessions"></div>`
+          : `<p class="empty-note">Esta rutina no tiene días cargados todavía.</p>`
+      }
     </div>
 
     <div id="progress-ejercicio" class="${state.progressTab === "ejercicio" ? "" : "hidden"}">
@@ -450,6 +473,16 @@ function renderProgreso() {
     });
   }
 
+  const diaRoutineSelect = $("#progress-dia-routine-select", root);
+  if (diaRoutineSelect) {
+    diaRoutineSelect.addEventListener("change", (e) => {
+      state.progressRoutineId = e.target.value;
+      state.progressDiaId = null;
+      state.progressSessionDate = null;
+      renderProgreso();
+    });
+  }
+
   const exerciseSelect = $("#progress-select", root);
   if (exerciseSelect) {
     exerciseSelect.addEventListener("change", (e) => {
@@ -458,11 +491,72 @@ function renderProgreso() {
     });
   }
 
-  if (state.progressTab === "ejercicio" && exercises.length) {
+  $$(".day-tab", root).forEach((btn) => {
+    if (!btn.dataset.progressDia) return;
+    btn.addEventListener("click", () => {
+      state.progressDiaId = btn.dataset.progressDia;
+      state.progressSessionDate = null;
+      renderProgreso();
+    });
+  });
+
+  if (state.progressTab === "dia" && routine.dias.length) {
+    renderDiaProgress(routine);
+  } else if (state.progressTab === "ejercicio" && exercises.length) {
     renderExerciseProgress(routine.id, exercises);
   } else if (state.progressTab === "peso") {
     renderBodyweightProgress();
   }
+}
+
+function renderDiaProgress(routine) {
+  const dia = routine.dias.find((d) => d.id === state.progressDiaId);
+  const container = $("#progress-dia-sessions");
+  if (!dia || !container) return;
+
+  const dates = getSessionDatesForDia(routine.id, dia);
+  if (!dates.length) {
+    container.innerHTML = `<p class="empty-note">Todavía no registraste ninguna sesión de "${dia.nombre}".</p>`;
+    return;
+  }
+
+  if (!state.progressSessionDate || !dates.includes(state.progressSessionDate)) {
+    state.progressSessionDate = dates[0];
+  }
+
+  const dateOptionsHtml = dates.map((d) => `<option value="${d}" ${d === state.progressSessionDate ? "selected" : ""}>${d}</option>`).join("");
+  const sections = getSessionForDiaDate(routine.id, dia, state.progressSessionDate);
+
+  container.innerHTML = `
+    <label class="ex-select-label">Sesión (${dates.length} registrada${dates.length === 1 ? "" : "s"})
+      <select id="progress-session-date-select">${dateOptionsHtml}</select>
+    </label>
+    <div class="pill-card session-summary-card">
+      ${
+        sections.length
+          ? sections
+              .map(
+                (s) => `
+              <div class="session-section">
+                <p class="session-section-title">${s.title}</p>
+                ${s.items
+                  .map(
+                    (it) =>
+                      `<div class="session-item"><span>${it.nombre}</span><span class="session-item-value">${it.peso || 0}kg · ${it.hecho || "-"}</span></div>`
+                  )
+                  .join("")}
+              </div>`
+              )
+              .join("")
+          : `<p class="empty-note">Sin datos para esta fecha.</p>`
+      }
+    </div>
+  `;
+
+  $("#progress-session-date-select", container).addEventListener("change", (e) => {
+    state.progressSessionDate = e.target.value;
+    renderDiaProgress(routine);
+  });
 }
 
 function renderExerciseProgress(routineId) {

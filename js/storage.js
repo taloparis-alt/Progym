@@ -184,6 +184,39 @@ function getLastKnownForExercise(routineId, exerciseId, beforeDate) {
   return null;
 }
 
+function diaEjercicioIds(dia) {
+  return [
+    ...dia.movilidad.ejercicios,
+    ...dia.zonaMedia.ejercicios,
+    ...dia.bloques.flatMap((b) => b.ejercicios),
+  ].map((e) => e.id);
+}
+
+function getSessionDatesForDia(routineId, dia) {
+  const exerciseIds = diaEjercicioIds(dia);
+  const logs = getLogs();
+  const routineLogs = logs[routineId] || {};
+  return Object.keys(routineLogs)
+    .filter((date) => exerciseIds.some((exId) => routineLogs[date][exId]))
+    .sort()
+    .reverse();
+}
+
+function getSessionForDiaDate(routineId, dia, date) {
+  const logs = getLogs();
+  const dayEntries = (logs[routineId] && logs[routineId][date]) || {};
+  const buildSection = (title, ejercicios) => ({
+    title,
+    items: ejercicios.filter((e) => dayEntries[e.id]).map((e) => ({ nombre: e.nombre, ...dayEntries[e.id] })),
+  });
+  const sections = [
+    buildSection("Movilidad", dia.movilidad.ejercicios),
+    buildSection("Zona media", dia.zonaMedia.ejercicios),
+    ...dia.bloques.map((b) => buildSection(b.nombre, b.ejercicios)),
+  ];
+  return sections.filter((s) => s.items.length);
+}
+
 /* ---------- Peso corporal (global, no depende de la rutina) ---------- */
 
 function getBodyweightLog() {
