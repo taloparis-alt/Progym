@@ -264,10 +264,25 @@ function renderRutina() {
       const row = btn.closest(".set-row");
       const pesoInput = row.querySelector(".input-peso");
       const hechoInput = row.querySelector(".input-hecho");
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", hechoInput.value);
-      flashSaved(row);
+      const filled = fillDefaults(pesoInput.value, hechoInput.value, hechoInput.placeholder);
       const original = btn.textContent;
+      if (!filled) {
+        btn.textContent = "Nada para guardar";
+        btn.classList.add("empty-flash");
+        clearTimeout(Number(btn.dataset.savedTimer));
+        btn.dataset.savedTimer = String(
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove("empty-flash");
+          }, 1500)
+        );
+        return;
+      }
+      pesoInput.value = filled.peso;
+      hechoInput.value = filled.hecho;
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", filled.peso);
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", filled.hecho);
+      flashSaved(row);
       btn.textContent = "✓ Guardado";
       btn.classList.add("saved-flash");
       clearTimeout(Number(btn.dataset.savedTimer));
@@ -295,9 +310,12 @@ function renderRutina() {
     $$(".set-row", root).forEach((row) => {
       const pesoInput = row.querySelector(".input-peso");
       const hechoInput = row.querySelector(".input-hecho");
-      if (pesoInput.value === "" && hechoInput.value === "") return;
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", pesoInput.value === "" ? "" : Number(pesoInput.value));
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", hechoInput.value);
+      const filled = fillDefaults(pesoInput.value, hechoInput.value, hechoInput.placeholder);
+      if (!filled) return;
+      pesoInput.value = filled.peso;
+      hechoInput.value = filled.hecho;
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", filled.peso);
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", filled.hecho);
       flashSaved(row);
       count++;
     });
@@ -313,6 +331,14 @@ function renderRutina() {
       }, 2200)
     );
   });
+}
+
+function fillDefaults(pesoValue, hechoValue, target) {
+  if (pesoValue === "" && hechoValue === "") return null;
+  return {
+    peso: pesoValue === "" ? 0 : Number(pesoValue),
+    hecho: hechoValue === "" ? target : hechoValue,
+  };
 }
 
 function flashSaved(row) {
