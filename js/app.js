@@ -307,22 +307,23 @@ function renderRutina() {
 
   $("#btn-save-session", root).addEventListener("click", () => {
     let count = 0;
+    const fecha = currentFecha();
     $$(".set-row", root).forEach((row) => {
       const pesoInput = row.querySelector(".input-peso");
       const hechoInput = row.querySelector(".input-hecho");
-      const filled = fillDefaults(pesoInput.value, hechoInput.value, hechoInput.placeholder);
-      if (!filled) return;
-      pesoInput.value = filled.peso;
-      hechoInput.value = filled.hecho;
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", filled.peso);
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", filled.hecho);
+      const peso = pesoInput.value === "" ? 0 : Number(pesoInput.value);
+      const hecho = hechoInput.value === "" ? hechoInput.placeholder : hechoInput.value;
+      pesoInput.value = peso;
+      hechoInput.value = hecho;
+      setEntry(routine.id, fecha, row.dataset.exercise, "peso", peso);
+      setEntry(routine.id, fecha, row.dataset.exercise, "hecho", hecho);
       flashSaved(row);
       count++;
     });
     const btn = $("#btn-save-session", root);
     const original = btn.textContent;
-    btn.textContent = count > 0 ? `✓ Sesión guardada (${count} ejercicio${count === 1 ? "" : "s"})` : "No hay nada cargado para guardar";
-    btn.classList.add(count > 0 ? "saved-flash" : "empty-flash");
+    btn.textContent = `✓ Sesión guardada (${count} ejercicio${count === 1 ? "" : "s"})`;
+    btn.classList.add("saved-flash");
     clearTimeout(Number(btn.dataset.savedTimer));
     btn.dataset.savedTimer = String(
       setTimeout(() => {
