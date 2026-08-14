@@ -9,6 +9,20 @@ const state = {
   configRoutineId: null,
 };
 
+let lastKnownFechaAuto = state.fecha;
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  const today = todayISO();
+  if (state.fecha === lastKnownFechaAuto && lastKnownFechaAuto !== today) {
+    state.fecha = today;
+    lastKnownFechaAuto = today;
+    if (state.view === "rutina") renderRutina();
+  } else {
+    lastKnownFechaAuto = today;
+  }
+});
+
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
