@@ -9,6 +9,7 @@ const state = {
   progressSessionDate: null,
   configScreen: "list",
   configRoutineId: null,
+  pendingEditEjercicioId: null,
 };
 
 let lastKnownFechaAuto = state.fecha;
@@ -120,7 +121,7 @@ function exerciseRowHtml(routineId, exercise) {
     <div class="set-labels">
       <span>Kg</span>
       <span>Reps</span>
-      <span>Anterior</span>
+      <span>Ant.</span>
       <span></span>
     </div>
     <div class="set-row" data-exercise="${exercise.id}">
@@ -140,6 +141,7 @@ function exerciseCardHtml(routineId, exercise) {
         <div class="ex-head-right">
           <span class="ex-target">${exercise.target}</span>
           <button class="btn-chart" data-goto="${exercise.id}" data-goto-routine="${routineId}" title="Ver progreso">📈</button>
+          <button class="btn-chart" data-edit-ex="${exercise.id}" data-edit-routine="${routineId}" title="Editar ejercicio">✎</button>
         </div>
       </div>
       ${exerciseRowHtml(routineId, exercise)}
@@ -266,25 +268,14 @@ function renderRutina() {
       const row = btn.closest(".set-row");
       const pesoInput = row.querySelector(".input-peso");
       const hechoInput = row.querySelector(".input-hecho");
-      const filled = fillDefaults(pesoInput.value, hechoInput.value, hechoInput.placeholder);
-      const original = btn.textContent;
-      if (!filled) {
-        btn.textContent = "Nada para guardar";
-        btn.classList.add("empty-flash");
-        clearTimeout(Number(btn.dataset.savedTimer));
-        btn.dataset.savedTimer = String(
-          setTimeout(() => {
-            btn.textContent = original;
-            btn.classList.remove("empty-flash");
-          }, 1500)
-        );
-        return;
-      }
-      pesoInput.value = filled.peso;
-      hechoInput.value = filled.hecho;
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", filled.peso);
-      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", filled.hecho);
+      const peso = pesoInput.value === "" ? 0 : Number(pesoInput.value);
+      const hecho = hechoInput.value === "" ? hechoInput.placeholder : hechoInput.value;
+      pesoInput.value = peso;
+      hechoInput.value = hecho;
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "peso", peso);
+      setEntry(routine.id, currentFecha(), row.dataset.exercise, "hecho", hecho);
       flashSaved(row);
+      const original = btn.textContent;
       btn.textContent = "✓ Guardado";
       btn.classList.add("saved-flash");
       clearTimeout(Number(btn.dataset.savedTimer));
@@ -297,12 +288,22 @@ function renderRutina() {
     });
   });
 
-  $$(".btn-chart", root).forEach((btn) =>
+  $$("[data-goto]", root).forEach((btn) =>
     btn.addEventListener("click", () => {
       state.view = "progreso";
       state.progressTab = "ejercicio";
       state.progressRoutineId = btn.dataset.gotoRoutine;
       state.progressExerciseId = btn.dataset.goto;
+      renderAll();
+    })
+  );
+
+  $$("[data-edit-ex]", root).forEach((btn) =>
+    btn.addEventListener("click", () => {
+      state.view = "config";
+      state.configScreen = "editor";
+      state.configRoutineId = btn.dataset.editRoutine;
+      state.pendingEditEjercicioId = btn.dataset.editEx;
       renderAll();
     })
   );
@@ -628,6 +629,17 @@ function renderConfig() {
   if (state.configScreen === "editor" && state.configRoutineId && getRoutine(state.configRoutineId)) {
     root.innerHTML = configEditorHtml(getRoutine(state.configRoutineId));
     wireConfigEditor();
+    if (state.pendingEditEjercicioId) {
+      const target = $(`#editor-ej-${state.pendingEditEjercicioId}`, root);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        target.classList.add("editor-ej-row-highlight");
+        setTimeout(() => target.classList.remove("editor-ej-row-highlight"), 2000);
+        const nameInput = target.querySelector('input[data-field="nombre"]');
+        if (nameInput) nameInput.focus();
+      }
+      state.pendingEditEjercicioId = null;
+    }
   } else {
     state.configScreen = "list";
     root.innerHTML = configListHtml();
@@ -829,7 +841,7 @@ function ejerciciosArrayOf(dia, seccionKey) {
 
 function editorEjercicioRowHtml(diaId, seccionKey, ejercicio) {
   return `
-    <div class="editor-ej-row">
+    <div class="editor-ej-row" id="editor-ej-${ejercicio.id}">
       <input type="text" placeholder="Nombre del ejercicio" data-dia="${diaId}" data-seccion="${seccionKey}" data-ej="${ejercicio.id}" data-field="nombre" value="${escAttr(ejercicio.nombre)}">
       <input type="text" placeholder="Target (ej: 8/8)" class="target-input" data-dia="${diaId}" data-seccion="${seccionKey}" data-ej="${ejercicio.id}" data-field="target" value="${escAttr(ejercicio.target)}">
       <button class="btn-remove-small" data-remove-ej="${ejercicio.id}" data-dia="${diaId}" data-seccion="${seccionKey}" title="Eliminar ejercicio">✕</button>
